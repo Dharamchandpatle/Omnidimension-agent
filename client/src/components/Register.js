@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import auth, { loginSuccess } from '../utils/authSlice';
-import { useNavigate, Link } from 'react-router-dom';
 
-export default function RegisterPage() {
+export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

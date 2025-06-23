@@ -1,9 +1,8 @@
-import React from "react";
-import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
-import { useSelector, useDispatch } from 'react-redux';
-import LoginPage from "./components/LoginPage";
-import RegisterPage from "./components/RegisterPage";
+import { useDispatch, useSelector } from 'react-redux';
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import DashboardPage from "./components/DashboardPage";
+import LoginPage from "./components/LoginPage";
+import Register from "./components/Register";
 import auth, { logout as logoutAction } from "./utils/auth";
 
 function PrivateRoute({ children }) {
@@ -23,7 +22,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={
         <PrivateRoute>
           <DashboardPage onLogout={onLogout} />
