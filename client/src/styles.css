@@ -90,7 +90,12 @@ button[disabled] {
   padding: 13px 10px;
   min-height: 85px;
   margin: 5px;
-  overflow: auto;
+  overflow: auto;.container { max-width: 600px; margin: auto; font-family: Arial, sans-serif; }
+.task-input-form { display: flex; gap: 8px; margin-bottom: 16px; }
+.task-input { flex: 1; padding: 8px; }
+.submit-btn { padding: 8px 16px; }
+.workflow-preview, .task-status { background: #f9f9f9; padding: 12px; margin-bottom: 16px; border-radius: 4px; }
+.loader { color: #007bff; font-weight: bold; }
 }
 img {
   margin: 7px 0;

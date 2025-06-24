@@ -1,10 +1,14 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from "react-router-dom";
+import React from "react";
+import ReactDOM from "react-dom/client";
 import { Provider } from 'react-redux';
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
 import store from './store';
-import App from './App';
-import './styles.css';
+import "./styles.css";
+
+// Main entry point for Omnidimension-agent frontend
+const rootElement = document.getElementById("root");
+const root = ReactDOM.createRoot(rootElement);
 
 // Register service worker for offline/PWA mode
 if ('serviceWorker' in navigator) {
@@ -15,11 +19,12 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
     <BrowserRouter>
-      <App />
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
     </BrowserRouter>
   </Provider>
 );

@@ -1,34 +1,39 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import DashboardPage from "./components/DashboardPage";
-import LoginPage from "./components/LoginPage";
-import Register from "./components/Register";
-import auth, { logout as logoutAction } from "./utils/auth";
+import React, { useState } from "react";
+import TaskInput from "./components/TaskInput";
+import WorkflowPreview from "./components/WorkflowPreview";
+import TaskStatus from "./components/TaskStatus";
+import Orchestrator from "./agents/Orchestrator";
+import "./styles.css";
 
-function PrivateRoute({ children }) {
-  const isAuth = useSelector(state => state.auth.isAuthenticated);
-  return isAuth ? children : <Navigate to="/login" />;
-}
+function App() {
+  const [workflow, setWorkflow] = useState(null);
+  const [status, setStatus] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-export default function App() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const onLogout = () => {
-    auth.logout();
-    dispatch(logoutAction());
-    navigate('/login');
+  const handleTaskSubmit = async (description) => {
+    setLoading(true);
+    setStatus([]);
+    setWorkflow(null);
+    try {
+      const orchestrator = new Orchestrator();
+      const { steps, result, logs } = await orchestrator.execute(description, (step, log) => {
+        setStatus((prev) => [...prev, { step, log }]);
+      });
+      setWorkflow({ steps, result });
+    } catch (err) {
+      setStatus([{ step: "error", log: err.message }]);
+    }
+    setLoading(false);
   };
 
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={
-        <PrivateRoute>
-          <DashboardPage onLogout={onLogout} />
-        </PrivateRoute>
-      } />
-      <Route path="*" element={<Navigate to="/dashboard" />} />
-    </Routes>
+    <div className="container">
+      <h1>Omnidimension Task Orchestrator</h1>
+      <TaskInput onSubmit={handleTaskSubmit} />
+      <WorkflowPreview workflow={workflow} />
+      <TaskStatus status={status} loading={loading} />
+    </div>
   );
 }
+
+export default App;
