@@ -38,4 +38,4 @@ coverage/
 server/credentials/*.json
 server\credentials
 
-server\credentials\my-calendar-app-463820-4dc458a0f6ef.json
+server\credentials\my-calendar-app-463820-4dc458a0f6ef.jsonserver/credentials/*.json 
