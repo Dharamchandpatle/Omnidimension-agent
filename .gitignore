@@ -1,0 +1,41 @@
+server/credentials/*.json 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Build output
+dist/
+build/
+out/
+
+# Misc
+*.local
+*.cache
+coverage/
+
+server/credentials/*.json
+server\credentials
+
+server\credentials\my-calendar-app-463820-4dc458a0f6ef.json
