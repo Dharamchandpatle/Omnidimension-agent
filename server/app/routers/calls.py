@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Any, List, Optional
+import json
 
 from ..services.omnidi_client import create_call, get_call_logs
 
@@ -30,7 +31,6 @@ def dispatch_call(req: DispatchRequest):
             to_phone=req.to_number,
             script=req.call_context.get("script", "")
         )
-        # Ensure status is string for Pydantic validation
         return DispatchResponse(
             call_id=resp.get("id", ""),
             status=str(resp.get("status", "")),
@@ -49,7 +49,19 @@ def fetch_call_logs(
     try:
         raw_logs = get_call_logs(page=page, page_size=page_size, agent_id=agent_id)
         formatted: List[CallLog] = []
-        for lg in raw_logs:
+        for entry in raw_logs:
+            # If entry is a JSON string, parse it first
+            if isinstance(entry, str):
+                try:
+                    lg = json.loads(entry)
+                except json.JSONDecodeError:
+                    continue
+            elif isinstance(entry, dict):
+                lg = entry
+            else:
+                # unsupported type
+                continue
+
             formatted.append(CallLog(
                 call_id=lg.get("id", ""),
                 status=str(lg.get("status", "")),
