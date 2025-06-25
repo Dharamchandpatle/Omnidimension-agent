@@ -33,3 +33,10 @@ out/
 *.local
 *.cache
 coverage/
+
+
+server\credentials\my-calendar-app-463820-4dc458a0f6ef.json
+
+# credentials
+credentials/
+credentials/*.json  

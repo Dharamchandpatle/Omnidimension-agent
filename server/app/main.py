@@ -1,11 +1,22 @@
 from fastapi import FastAPI
-from .routers import tasks
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Multi-Agent Task Orchestrator")
+from .routers.tasks import router as tasks_router
+from .routers.calls import router as calls_router
+from .routers.agents import router as agents_router
 
-# include routers
-app.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"])
+app = FastAPI(title="OmniDimension Multi-Agent API")
 
-@app.get("/")
-def root():
-    return {"message": "API is running!"}
+# Enable CORS for local frontend (adjust origin in production)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
+)
+
+# Router registration
+app.include_router(tasks_router,  prefix="/api/tasks", tags=["tasks"])
+app.include_router(calls_router,  prefix="/api/calls", tags=["calls"])
+app.include_router(agents_router, prefix="/api/agents", tags=["agents"])

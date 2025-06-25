@@ -1,3 +1,1 @@
-from .tasks import router
-
-__all__ = ["router"]
+# (Empty file — imports happen in main.py directly)

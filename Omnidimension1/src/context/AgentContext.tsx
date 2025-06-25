@@ -1,86 +1,111 @@
-import React, { createContext, useContext, ReactNode, useState } from 'react';
+// src/context/AgentContext.tsx
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import axios from 'axios';
 
-interface DispatchRequest {
-  agent_id: number;
-  to_number: string;
-  call_context?: Record<string, any>;
+export type AgentStatus = 'idle' | 'active' | 'completed' | 'error' | 'scheduled';
+export interface Agent {
+  id: number;
+  name: string;
+  type: 'research'|'caller'|'scheduler'|'coordinator';
+  status: AgentStatus;
+  currentTask?: string;
+  progress?: number; // 0-100
 }
 
-interface DispatchResponse {
-  call_id: string;
-  status: string;
-  raw: Record<string, any>;
+export interface WorkflowStep {
+  title: string;
+  description: string;
+  status: 'pending'|'active'|'completed'|'error';
 }
 
-interface CallLogFilter {
-  page?: number;
-  page_size?: number;
-  agent_id?: number;
+export interface Workflow {
+  steps: WorkflowStep[];
 }
 
 interface AgentContextType {
-  agents: any[];
-  activeWorkflow?: any;
-  dispatchCall: (agentId: number, to: string, ctx?: Record<string, any>) => Promise<DispatchResponse>;
-  getCallLogs: (page?: number, page_size?: number, agent_id?: number) => Promise<DispatchResponse[]>;
-  updateAgent: (agentId: string, updates: Partial<any>) => void;
+  agents: Agent[];
+  activeWorkflow: Workflow | null;
+  dispatchCall: (agent_id: number, to_number: string, call_context: any) => Promise<any>;
+  getCallLogs: (page?: number, page_size?: number, agent_id?: number) => Promise<any[]>;
 }
 
-const AgentContext = createContext<AgentContextType | undefined>(undefined);
+const AgentContext = createContext<AgentContextType|undefined>(undefined);
 
 export const AgentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [agents, setAgents] = useState<any[]>([]);
-  const [activeWorkflow, setActiveWorkflow] = useState<any>(undefined);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [activeWorkflow, setActiveWorkflow] = useState<Workflow|null>(null);
 
-  // Existing updateAgent logic
-  const updateAgent = (agentId: string, updates: Partial<any>) => {
-    setAgents(prev => prev.map(agent => 
-      agent.id === agentId ? { ...agent, ...updates } : agent
-    ));
+  // 1) बेस URL सेट
+  axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+
+  // 2) Agents लोड करो
+  useEffect(() => {
+    axios.get<Agent[]>('/agents/')
+      .then(res => {
+        // API से केवल id+name मिलता है, बाकी फील्ड mock कर रहे:
+        const list = res.data.map(a => ({
+          ...a,
+          type: detectType(a.name),   // helper जो name देखकर type निकालता
+          status: 'idle' as AgentStatus,
+          currentTask: undefined,
+          progress: 0
+        }));
+        setAgents(list);
+      })
+      .catch(console.error);
+  }, []);
+
+  // helper: agent.name से type निकलवाएं
+  const detectType = (name: string) => {
+    if (name.toLowerCase().includes('search')) return 'research';
+    if (name.toLowerCase().includes('appointment')) return 'caller';
+    // आदि...
+    return 'coordinator';
   };
 
-  // API integration
-  const baseUrl = 'http://127.0.0.1:8000/api/calls';
-  
-  const dispatchCall = async (
-    agentId: number,
-    to: string,
-    call_context: Record<string, any> = {}
-  ): Promise<DispatchResponse> => {
-    const res = await fetch(`${baseUrl}/dispatch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ agent_id: agentId, to_number: to, call_context }),
+  // 3) Dispatch Call
+  const dispatchCall = async (agent_id: number, to_number: string, call_context: any) => {
+    const { data } = await axios.post('/calls/dispatch', {
+      agent_id, to_number, call_context
     });
-    if (!res.ok) throw new Error('Dispatch failed');
-    return res.json();
+    return data;
   };
 
-  const getCallLogs = async (
-    page = 1,
-    page_size = 30,
-    agent_id?: number
-  ): Promise<DispatchResponse[]> => {
-    const params = new URLSearchParams({
-      page: String(page),
-      page_size: String(page_size),
-      ...(agent_id ? { agent_id: String(agent_id) } : {}),
-    });
-    const res = await fetch(`${baseUrl}/logs?${params.toString()}`);
-    if (!res.ok) throw new Error('Fetch logs failed');
-    return res.json();
+  // 4) Get Call Logs
+  const getCallLogs = async (page = 1, page_size = 30, agent_id?: number) => {
+    const params: any = { page, page_size };
+    if (agent_id) params.agent_id = agent_id;
+    const { data } = await axios.get<any[]>('/calls/logs', { params });
+    return data;
   };
+
+  // 5) Mock Active Workflow (आप इसे /api/tasks/ से भी ला सकते हैं)
+  useEffect(() => {
+    // Example मेहनताना: हर बार Agents बदलें तो workflow रीसेट
+    setActiveWorkflow({
+      steps: [
+        { title: 'Research Providers', description: 'Finding best matches', status: 'completed' },
+        { title: 'Contact Provider', description: 'Calling clinic', status: 'active' },
+        { title: 'Schedule', description: 'Adding to calendar', status: 'pending' },
+        { title: 'Confirmation', description: 'Final check', status: 'pending' },
+      ]
+    });
+  }, [agents]);
 
   return (
-    <AgentContext.Provider value={{ agents, activeWorkflow, updateAgent, dispatchCall, getCallLogs }}>
+    <AgentContext.Provider value={{
+      agents,
+      activeWorkflow,
+      dispatchCall,
+      getCallLogs
+    }}>
       {children}
     </AgentContext.Provider>
   );
 };
 
-export const useAgent = (): AgentContextType => {
-  const context = useContext(AgentContext);
-  if (!context) throw new Error('useAgent must be used within AgentProvider');
-  return context;
+export const useAgent = () => {
+  const ctx = useContext(AgentContext);
+  if (!ctx) throw new Error('useAgent must be used inside AgentProvider');
+  return ctx;
 };
-
