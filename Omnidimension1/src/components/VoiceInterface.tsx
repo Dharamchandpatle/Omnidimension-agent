@@ -112,7 +112,7 @@ export const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onVoiceInput, la
   // Automatically provide voice feedback when user submits a task
   useEffect(() => {
     if (lastUserInput && speechEnabled && synthRef.current) {
-      const greeting = "Hello, you're welcome!";
+      const greeting = "Hello, you're welcome! sir what can I do for you today?";
       const repetition = `You entered: ${lastUserInput}`;
       const response = "I'm now coordinating with our agents to execute your task. You can monitor the progress in real-time below.";
       

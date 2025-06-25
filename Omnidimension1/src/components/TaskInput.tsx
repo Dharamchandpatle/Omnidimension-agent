@@ -29,7 +29,7 @@ export const TaskInput: React.FC = () => {
   };
 
   const exampleTasks = [
-    "Find the best dentist in NYC, call to book an appointment this week, add to my calendar",
+    "Find the best dentist in my area , call to book an appointment this week, add to my calendar",
     "Research restaurants for anniversary dinner, make reservation for 2 at 7pm Saturday",
     "Find a plumber, get quotes for bathroom renovation, schedule consultations",
     "Book flight to London for next month, find hotel near city center, arrange airport transfer"

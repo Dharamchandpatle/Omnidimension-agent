@@ -70,7 +70,7 @@ export const AgentProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       {
         id: 'step-2',
         title: 'Research Providers',
-        description: 'Find dental clinics in NYC area',
+        description: 'Find dental clinics in my area',
         status: 'active',
         agentId: 'research-1'
       },
