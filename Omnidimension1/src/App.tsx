@@ -27,7 +27,7 @@ function App() {
             )}
             
             {activeTab === 'integrations' && <ServiceIntegrations />}
-            {activeTab === 'history' && <TaskHistory />}
+            {/* {activeTab === 'history' && <TaskHistory />} */}
           </main>
         </div>
       </AgentProvider>
